@@ -1,0 +1,158 @@
+---
+import Base from '../layouts/Base.astro';
+
+const photos = [
+  { src: '/photos/Glimpse.jpg', alt: 'Glimpse' },
+  { src: '/photos/Isolated.jpg', alt: 'Isolated' },
+  { src: '/photos/Kill-With-A-Smile.jpg', alt: 'Kill With A Smile' },
+  { src: '/photos/A-Story-My-Father-Told-Me.jpg', alt: 'A Story My Father Told Me' },
+  { src: '/photos/Scale.jpg', alt: 'Scale' },
+  { src: '/photos/Not-So-Blue.jpg', alt: 'Not So Blue' },
+  { src: '/photos/Procession.jpg', alt: 'Procession' },
+  { src: '/photos/Light-the-Way.jpg', alt: 'Light the Way' },
+  { src: '/photos/Live-Die-Live-Again.png', alt: 'Live Die Live Again' },
+  { src: '/photos/Tolt.jpg', alt: 'Tölt' },
+  { src: '/photos/Pass-the-Salt.jpg', alt: 'Pass the Salt' },
+  { src: '/photos/Happy-Neigh-Year.jpg', alt: 'Happy Neigh Year' },
+  { src: '/photos/Two-Birds.png', alt: 'Two Birds' },
+  { src: '/photos/My-Light.jpg', alt: 'My Light' },
+  { src: '/photos/Steering-Contest.jpg', alt: 'Steering Contest' },
+  { src: '/photos/No-Nagging.jpg', alt: 'No Nagging' },
+  { src: '/photos/Swoop.jpg', alt: 'Swoop' },
+  { src: '/photos/Twinning.jpg', alt: 'Twinning' },
+];
+---
+
+<Base
+  title="Pierce Liefeld"
+  description="Photography by Pierce Liefeld. Design director and founder of COGNAK."
+>
+  <main>
+    <header>
+      <div class="bio">
+        <h1>Pierce Liefeld</h1>
+        <p>
+          Design director. Photographer. Founder of&nbsp;<a href="https://cognak.com" target="_blank" rel="noopener">COGNAK</a>.
+        </p>
+      </div>
+    </header>
+
+    <section class="grid">
+      {photos.map((photo) => (
+        <div class="photo-item">
+          <img
+            src={photo.src}
+            alt={photo.alt}
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+      ))}
+    </section>
+
+    <footer>
+      <span>© Pierce Liefeld</span>
+    </footer>
+  </main>
+</Base>
+
+<style>
+  main {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+  }
+
+  header {
+    padding: 3rem 2rem 2rem;
+    max-width: var(--max-w);
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .bio h1 {
+    font-size: 1.1rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    color: var(--fg);
+    margin-bottom: 0.35rem;
+  }
+
+  .bio p {
+    font-size: 0.875rem;
+    font-weight: 300;
+    color: var(--fg-muted);
+    line-height: 1.5;
+  }
+
+  .bio a {
+    color: var(--accent);
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.15s ease;
+  }
+
+  .bio a:hover {
+    border-color: var(--accent);
+  }
+
+  /* Masonry via CSS columns */
+  .grid {
+    column-count: 3;
+    column-gap: var(--gap);
+    padding: 0 var(--gap) var(--gap);
+    flex: 1;
+  }
+
+  .photo-item {
+    break-inside: avoid;
+    margin-bottom: var(--gap);
+    overflow: hidden;
+    border-radius: var(--radius);
+    background: #111;
+  }
+
+  .photo-item img {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: opacity 0.3s ease, transform 0.4s ease;
+    opacity: 0.92;
+  }
+
+  .photo-item:hover img {
+    opacity: 1;
+    transform: scale(1.012);
+  }
+
+  footer {
+    padding: 1.5rem 2rem;
+    font-size: 0.75rem;
+    color: var(--fg-muted);
+    font-weight: 300;
+    letter-spacing: 0.02em;
+    text-align: center;
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .grid {
+      column-count: 2;
+    }
+    header {
+      padding: 2rem 1.25rem 1.5rem;
+    }
+  }
+
+  @media (max-width: 540px) {
+    .grid {
+      column-count: 1;
+      padding: 0 0.5rem 0.5rem;
+    }
+    header {
+      padding: 1.5rem 1rem 1rem;
+    }
+    .bio h1 {
+      font-size: 1rem;
+    }
+  }
+</style>
