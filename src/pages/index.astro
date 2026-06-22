@@ -136,15 +136,15 @@ const photos = [
 
   .cognak-preview {
     position: absolute;
-    bottom: calc(100% + 10px);
+    top: calc(100% + 10px);
     left: 0;
-    width: 320px;
-    height: 200px;
+    width: 384px;
+    height: 216px; /* 16:9 hero ratio */
     border-radius: 6px;
     overflow: hidden;
     box-shadow: 0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(159,80,255,0.25);
     opacity: 0;
-    transform: translateY(6px) scale(0.97);
+    transform: translateY(-6px) scale(0.97);
     transition: opacity 0.25s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     pointer-events: none;
     z-index: 100;
@@ -157,8 +157,8 @@ const photos = [
   }
 
   .cognak-preview iframe {
-    width: 1280px;
-    height: 800px;
+    width: 1536px;
+    height: 864px; /* 16:9 of 1536 */
     transform: scale(0.25);
     transform-origin: top left;
     border: none;
@@ -208,8 +208,8 @@ const photos = [
   @media (max-width: 900px) {
     .grid { column-count: 2; }
     header { padding: 2rem 1.25rem 1.5rem; }
-    .cognak-preview { width: 260px; height: 162px; }
-    .cognak-preview iframe { width: 1040px; height: 650px; transform: scale(0.25); }
+    .cognak-preview { width: 304px; height: 171px; }
+    .cognak-preview iframe { width: 1216px; height: 684px; transform: scale(0.25); }
   }
 
   @media (max-width: 540px) {
