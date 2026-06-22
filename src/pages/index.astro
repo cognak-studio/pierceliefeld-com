@@ -149,7 +149,9 @@ const photos = [
     transition: color 0.2s ease;
   }
 
-  .bio a:hover {
+  .bio a:hover,
+  .bio a:active,
+  .bio a:focus {
     color: #9F50FF;
   }
 
@@ -234,7 +236,6 @@ const photos = [
   @media (max-width: 540px) {
     .grid { column-count: 1; padding: 0 0.5rem 0.5rem; }
     header { padding: 100px 1rem 1rem; }
-    .bio h1 { font-size: 1rem; }
     .cognak-preview { display: none; }
   }
 </style>
