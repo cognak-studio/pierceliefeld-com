@@ -8,7 +8,7 @@ interface Props {
 
 const {
   title = 'Pierce Liefeld',
-  description = 'Photography by Pierce Liefeld.',
+  description = 'Photography by Pierce Liefeld. Design director and founder of COGNAK.',
 } = Astro.props;
 ---
 <!doctype html>
@@ -18,12 +18,44 @@ const {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
     <title>{title}</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js" is:inline></script>
   </head>
   <body>
     <slot />
+    <script is:inline>
+      (function() {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        document.addEventListener('DOMContentLoaded', function() {
+          var lenis = new Lenis({
+            duration: 1.2,
+            easing: function(t) { return t === 1 ? 1 : 1 - Math.pow(2, -10 * t); },
+            wheelMultiplier: 0.6,
+          });
+          function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+          requestAnimationFrame(raf);
+          window._lenis = lenis;
+
+          // Image reveal via IntersectionObserver
+          var reveals = document.querySelectorAll('.reveal');
+          if ('IntersectionObserver' in window) {
+            var io = new IntersectionObserver(function(entries) {
+              entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                  entry.target.classList.add('visible');
+                  io.unobserve(entry.target);
+                }
+              });
+            }, { threshold: 0.08 });
+            reveals.forEach(function(el) { io.observe(el); });
+          } else {
+            reveals.forEach(function(el) { el.classList.add('visible'); });
+          }
+        });
+      })();
+    </script>
   </body>
 </html>

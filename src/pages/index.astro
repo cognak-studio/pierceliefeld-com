@@ -29,7 +29,7 @@ const photos = [
 >
   <main>
     <header>
-      <div class="bio">
+      <div class="bio reveal">
         <h1>Pierce Liefeld</h1>
         <p>
           Design director. Photographer. Founder of&nbsp;<a href="https://cognak.com" target="_blank" rel="noopener">COGNAK</a>.
@@ -38,12 +38,12 @@ const photos = [
     </header>
 
     <section class="grid">
-      {photos.map((photo) => (
-        <div class="photo-item">
+      {photos.map((photo, i) => (
+        <div class="photo-item reveal" style={`transition-delay: ${Math.min(i * 40, 200)}ms`}>
           <img
             src={photo.src}
             alt={photo.alt}
-            loading="lazy"
+            loading={i < 6 ? 'eager' : 'lazy'}
             decoding="async"
           />
         </div>
@@ -130,6 +130,7 @@ const photos = [
     color: var(--fg-muted);
     font-weight: 300;
     letter-spacing: 0.02em;
+    font-family: var(--font-mono);
     text-align: center;
   }
 
