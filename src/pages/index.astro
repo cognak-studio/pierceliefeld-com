@@ -84,7 +84,7 @@ const photos = [
     </section>
 
     <footer>
-      <span>© 2026 Pierce Liefeld</span>
+      <span class="decode" data-text="© 2026 Pierce Liefeld">© 2026 Pierce Liefeld</span>
     </footer>
   </main>
 
@@ -102,6 +102,75 @@ const photos = [
         el.style.transitionDelay = Math.min(idx * 40, 200) + 'ms';
         grid.appendChild(el);
       });
+    })();
+  </script>
+
+  <!-- Footer text decode effect -->
+  <script is:inline>
+    (function () {
+      var el = document.querySelector('footer .decode');
+      if (!el) return;
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+      var target = el.getAttribute('data-text') || el.textContent;
+      var glyphs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#%&*<>/';
+
+      // Build a span per character
+      el.textContent = '';
+      var spans = [];
+      for (var i = 0; i < target.length; i++) {
+        var s = document.createElement('span');
+        s.className = 'char';
+        el.appendChild(s);
+        spans.push(s);
+      }
+
+      function rand() { return glyphs[Math.floor(Math.random() * glyphs.length)]; }
+
+      function run() {
+        var settle = [];   // frame index at which each char locks in
+        var total = 38;    // total frames
+        for (var i = 0; i < target.length; i++) {
+          settle[i] = Math.floor((i / target.length) * (total - 10)) + Math.floor(Math.random() * 8);
+        }
+
+        var frame = 0;
+        function tick() {
+          for (var i = 0; i < spans.length; i++) {
+            var ch = target[i];
+            if (ch === ' ') { spans[i].textContent = ' '; spans[i].className = 'char'; continue; }
+            if (frame >= settle[i]) {
+              spans[i].textContent = ch;
+              spans[i].className = 'char';
+            } else {
+              spans[i].textContent = rand();
+              spans[i].className = 'char scrambling';
+            }
+          }
+          frame++;
+          if (frame <= total) {
+            requestAnimationFrame(tick);
+          } else {
+            for (var j = 0; j < spans.length; j++) {
+              spans[j].textContent = target[j];
+              spans[j].className = 'char';
+            }
+          }
+        }
+        tick();
+      }
+
+      // Kick off when the footer scrolls into view
+      if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) { run(); io.unobserve(entry.target); }
+          });
+        }, { threshold: 0.6 });
+        io.observe(el);
+      } else {
+        run();
+      }
     })();
   </script>
 </Base>
@@ -213,6 +282,10 @@ const photos = [
   }
 
   footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 96px;
     padding: 1.5rem 2rem;
     font-size: 0.75rem;
     color: var(--fg-muted);
@@ -220,6 +293,14 @@ const photos = [
     letter-spacing: 0.02em;
     font-family: var(--font-mono);
     text-align: center;
+  }
+
+  footer .decode {
+    white-space: pre;
+  }
+
+  footer .decode .char.scrambling {
+    color: var(--accent);
   }
 
   /* Responsive */
