@@ -24,9 +24,37 @@ const photos = [
 ---
 
 <Base
-  title="Pierce Liefeld"
+  title="Pierce Liefeld — Photographer & Founder of COGNAK"
   description="Photography by Pierce Liefeld. Design director and founder of COGNAK."
 >
+  <!-- Person + Organization schema -->
+  <script type="application/ld+json" is:inline>{JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Person",
+        "@id": "https://pierceliefeld.com/#pierce",
+        "name": "Pierce Liefeld",
+        "url": "https://pierceliefeld.com",
+        "image": "https://pierceliefeld.com/photos/Glimpse.jpg",
+        "jobTitle": "Design Director",
+        "description": "Design director, photographer, and founder of COGNAK.",
+        "sameAs": ["https://cognak.com"],
+        "worksFor": {
+          "@type": "Organization",
+          "@id": "https://cognak.com/#organization"
+        }
+      },
+      {
+        "@type": "Organization",
+        "@id": "https://cognak.com/#organization",
+        "name": "COGNAK",
+        "url": "https://cognak.com",
+        "founder": { "@id": "https://pierceliefeld.com/#pierce" }
+      }
+    ]
+  })}</script>
+
   <main>
     <header>
       <div class="bio reveal">
@@ -37,18 +65,18 @@ const photos = [
       </div>
     </header>
 
-    <section class="grid">
+    <section class="grid" id="grid">
       {photos.map((photo, i) => (
         <div
           class="photo-item reveal"
           style={`transition-delay: ${Math.min(i * 40, 200)}ms`}
-          data-src={photo.src}
-          data-alt={photo.alt}
-          data-index={i}
-          role="button"
-          tabindex="0"
-          aria-label={`View ${photo.alt}`}
         >
+          <div class="photo-ring">
+            <svg class="ring-svg" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="18" cy="18" r="16" stroke="#9F50FF" stroke-width="2" stroke-linecap="round"
+                stroke-dasharray="100.53" stroke-dashoffset="100.53" class="ring-track"/>
+            </svg>
+          </div>
           <img
             src={photo.src}
             alt={photo.alt}
@@ -60,92 +88,66 @@ const photos = [
     </section>
 
     <footer>
-      <span>© Pierce Liefeld</span>
+      <span>© 2026 Pierce Liefeld</span>
     </footer>
   </main>
 
   <script is:inline>
-    document.addEventListener('DOMContentLoaded', function() {
-      var items = Array.from(document.querySelectorAll('.photo-item[data-src]'));
-      var lb = document.getElementById('lb');
-      var lbImg = document.getElementById('lb-img');
-      var lbCaption = document.getElementById('lb-caption');
-      var current = 0;
+    document.addEventListener('DOMContentLoaded', function () {
+      var grid = document.getElementById('grid');
+      var items = Array.from(grid.querySelectorAll('.photo-item'));
+      var HOLD_MS = 600;
 
-      function open(index) {
-        current = index;
-        lb.classList.remove('closing');
-        lb.classList.add('open');
-        document.body.style.overflow = 'hidden';
-        if (window._lenis) window._lenis.stop();
-        show(current, false);
-      }
+      items.forEach(function (item) {
+        var timer = null;
+        var ring = item.querySelector('.ring-track');
+        var anim = null;
 
-      function close() {
-        lb.classList.add('closing');
-        setTimeout(function() {
-          lb.classList.remove('open', 'closing');
-          document.body.style.overflow = '';
-          if (window._lenis) window._lenis.start();
-          lbImg.classList.remove('loaded', 'switching');
-          lbCaption.classList.remove('visible');
-        }, 240);
-      }
+        function startHold() {
+          // Animate ring drawing over HOLD_MS
+          var start = null;
+          var circumference = 100.53;
+          ring.style.transition = 'none';
+          ring.style.strokeDashoffset = circumference;
+          ring.style.opacity = '1';
 
-      function show(index, switching) {
-        var item = items[index];
-        lbImg.classList.remove('loaded', 'switching');
-        lbCaption.classList.remove('visible');
-        lbImg.alt = item.dataset.alt;
-        lbCaption.textContent = item.dataset.alt;
-        lbImg.src = '';
-        setTimeout(function() {
-          lbImg.src = item.dataset.src;
-          var cls = switching ? 'switching' : 'loaded';
-          lbImg.onload = function() {
-            lbImg.classList.add(cls);
-            lbCaption.classList.add('visible');
-          };
-          if (lbImg.complete && lbImg.naturalWidth) {
-            lbImg.classList.add(cls);
-            lbCaption.classList.add('visible');
+          function step(ts) {
+            if (!start) start = ts;
+            var progress = Math.min((ts - start) / HOLD_MS, 1);
+            ring.style.strokeDashoffset = circumference * (1 - progress);
+            if (progress < 1) {
+              anim = requestAnimationFrame(step);
+            } else {
+              // Ring complete — expand this item, dim others
+              grid.classList.add('has-focus');
+              item.classList.add('focused');
+              ring.style.opacity = '0';
+              ring.style.transition = 'opacity 0.3s ease';
+            }
           }
-        }, 20);
-      }
+          anim = requestAnimationFrame(step);
 
-      function prev() { current = (current - 1 + items.length) % items.length; show(current, true); }
-      function next() { current = (current + 1) % items.length; show(current, true); }
+          timer = null;
+        }
 
-      items.forEach(function(item, i) {
-        item.addEventListener('click', function() { open(i); });
-        item.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === ' ') open(i); });
-      });
+        function cancelHold() {
+          if (anim) { cancelAnimationFrame(anim); anim = null; }
+          if (timer) { clearTimeout(timer); timer = null; }
+          ring.style.transition = 'opacity 0.2s ease, stroke-dashoffset 0.2s ease';
+          ring.style.strokeDashoffset = '100.53';
+          ring.style.opacity = '0';
+          grid.classList.remove('has-focus');
+          item.classList.remove('focused');
+        }
 
-      document.getElementById('lb-close').addEventListener('click', close);
-      document.getElementById('lb-prev').addEventListener('click', prev);
-      document.getElementById('lb-next').addEventListener('click', next);
+        item.addEventListener('mouseenter', function () {
+          timer = setTimeout(startHold, 0); // start immediately, ring animates over HOLD_MS
+        });
 
-      lb.addEventListener('click', function(e) { if (e.target === lb) close(); });
-
-      document.addEventListener('keydown', function(e) {
-        if (!lb.classList.contains('open')) return;
-        if (e.key === 'Escape') close();
-        if (e.key === 'ArrowLeft') prev();
-        if (e.key === 'ArrowRight') next();
+        item.addEventListener('mouseleave', cancelHold);
       });
     });
   </script>
-
-  <!-- Lightbox -->
-  <div id="lb" aria-modal="true" role="dialog" aria-label="Photo viewer">
-    <button id="lb-close" aria-label="Close">✕</button>
-    <button id="lb-prev" aria-label="Previous">‹</button>
-    <button id="lb-next" aria-label="Next">›</button>
-    <div id="lb-img-wrap">
-      <img id="lb-img" src="" alt="" />
-    </div>
-    <p id="lb-caption"></p>
-  </div>
 </Base>
 
 <style>
@@ -172,19 +174,19 @@ const photos = [
 
   .bio p {
     font-size: 0.875rem;
-    font-weight: 300;
+    font-weight: 400;
     color: var(--fg-muted);
     line-height: 1.5;
   }
 
   .bio a {
     color: var(--accent);
-    border-bottom: 1px solid transparent;
-    transition: border-color 0.15s ease;
+    font-weight: 700;
+    transition: color 0.2s ease;
   }
 
   .bio a:hover {
-    border-color: var(--accent);
+    color: #9F50FF;
   }
 
   /* Masonry via CSS columns */
@@ -200,155 +202,71 @@ const photos = [
     margin-bottom: var(--gap);
     overflow: hidden;
     border-radius: var(--radius);
-    background: #111;
+    background: #1a1820;
+    position: relative;
+    transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.4s ease,
+                z-index 0s;
   }
 
+  /* Ring overlay */
+  .photo-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 44px;
+    height: 44px;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .ring-svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+
+  .ring-track {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  /* Focused state */
   .photo-item img {
     width: 100%;
     height: auto;
     display: block;
-    transition: opacity 0.3s ease, transform 0.4s ease;
-    opacity: 0.92;
+    transition: opacity 0.35s ease, transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity: 0.9;
   }
 
-  .photo-item:hover img {
+  /* When grid has a focused item, dim all others */
+  .grid.has-focus .photo-item {
+    opacity: 0.15;
+    transition: opacity 0.45s ease, transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .grid.has-focus .photo-item.focused {
     opacity: 1;
-    transform: scale(1.012);
+    transform: scale(1.3);
+    z-index: 2;
+    position: relative;
+  }
+
+  .grid.has-focus .photo-item.focused img {
+    opacity: 1;
   }
 
   footer {
     padding: 1.5rem 2rem;
     font-size: 0.75rem;
     color: var(--fg-muted);
-    font-weight: 300;
+    font-weight: 400;
     letter-spacing: 0.02em;
     font-family: var(--font-mono);
     text-align: center;
   }
-
-  /* Lightbox */
-  @keyframes lb-backdrop-in {
-    from { opacity: 0; backdrop-filter: blur(0px); }
-    to   { opacity: 1; backdrop-filter: blur(16px); }
-  }
-
-  @keyframes lb-backdrop-out {
-    from { opacity: 1; backdrop-filter: blur(16px); }
-    to   { opacity: 0; backdrop-filter: blur(0px); }
-  }
-
-  @keyframes iris-open {
-    from { clip-path: circle(0% at 50% 50%); }
-    to   { clip-path: circle(100% at 50% 50%); }
-  }
-
-  @keyframes lb-caption-in {
-    from { opacity: 0; transform: translateY(6px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  #lb {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 1000;
-    background: rgba(23, 21, 26, 0.95);
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-  }
-
-  #lb.open {
-    display: flex;
-    animation: lb-backdrop-in 0.3s ease forwards;
-  }
-
-  #lb.closing {
-    animation: lb-backdrop-out 0.25s ease forwards;
-  }
-
-  #lb-img-wrap {
-    max-width: min(90vw, 1100px);
-    max-height: 80vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  #lb-img {
-    max-width: 100%;
-    max-height: 80vh;
-    object-fit: contain;
-    border-radius: 2px;
-    clip-path: circle(0% at 50% 50%);
-  }
-
-  #lb-img.loaded {
-    animation: iris-open 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  }
-
-  #lb-img.switching {
-    animation: iris-open 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  }
-
-  #lb-caption {
-    margin-top: 1rem;
-    font-size: 0.7rem;
-    color: var(--fg-muted);
-    font-family: var(--font-mono);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    opacity: 0;
-  }
-
-  #lb-caption.visible {
-    animation: lb-caption-in 0.3s ease 0.35s forwards;
-  }
-
-  #lb-close {
-    position: fixed;
-    top: 1.25rem;
-    right: 1.5rem;
-    background: none;
-    border: none;
-    color: var(--fg-muted);
-    font-size: 1.1rem;
-    cursor: pointer;
-    padding: 0.5rem;
-    line-height: 1;
-    transition: color 0.15s;
-    font-family: var(--font-mono);
-    opacity: 0;
-    animation: lb-caption-in 0.3s ease 0.1s forwards;
-  }
-
-  #lb-close:hover { color: var(--fg); }
-
-  #lb-prev, #lb-next {
-    position: fixed;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    color: var(--fg-muted);
-    font-size: 2rem;
-    cursor: pointer;
-    padding: 1.25rem;
-    line-height: 1;
-    transition: color 0.15s, transform 0.15s;
-    user-select: none;
-    opacity: 0;
-    animation: lb-caption-in 0.3s ease 0.2s forwards;
-  }
-
-  #lb-prev { left: 0; transform: translateY(-50%); }
-  #lb-next { right: 0; transform: translateY(-50%); }
-
-  #lb-prev:hover { color: var(--fg); transform: translateY(-50%) translateX(-3px); }
-  #lb-next:hover { color: var(--fg); transform: translateY(-50%) translateX(3px); }
-
-  .photo-item { cursor: zoom-in; }
 
   /* Responsive */
   @media (max-width: 900px) {
