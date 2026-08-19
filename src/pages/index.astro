@@ -1,6 +1,10 @@
 ---
 import Base from '../layouts/Base.astro';
 
+// Baked in at build time; a script in the footer refreshes it at runtime so
+// the year is still right if the site goes a long stretch without a deploy.
+const copyright = `© ${new Date().getFullYear()} Pierce Liefeld`;
+
 const photos = [
   { src: '/photos/Glimpse.jpg', alt: 'Glimpse' },
   { src: '/photos/Isolated.jpg', alt: 'Isolated' },
@@ -85,7 +89,7 @@ const photos = [
 
     <footer>
       <span class="critter" aria-hidden="true"><span class="critter-glyph">🐃</span></span>
-      <span class="decode" data-text="© 2026 Pierce Liefeld">© 2026 Pierce Liefeld</span>
+      <span class="decode" data-text={copyright}>{copyright}</span>
     </footer>
   </main>
 
@@ -103,6 +107,22 @@ const photos = [
         el.style.transitionDelay = Math.min(idx * 40, 200) + 'ms';
         grid.appendChild(el);
       });
+    })();
+  </script>
+
+  <!-- Roll the © year over at runtime. The page is statically built, so the
+       year baked in at build time goes stale if the site isn't redeployed.
+       Must stay above the decode script, which replaces .decode's contents
+       with one span per character, and must not sit behind that script's
+       reduced-motion early return. -->
+  <script is:inline>
+    (function () {
+      var el = document.querySelector('footer .decode');
+      if (!el) return;
+      var text = (el.getAttribute('data-text') || el.textContent)
+        .replace(/\b\d{4}\b/, new Date().getFullYear());
+      el.setAttribute('data-text', text);
+      el.textContent = text;
     })();
   </script>
 
@@ -335,8 +355,9 @@ const photos = [
     position: relative;
     z-index: 1;
     /* Optical centering: the line box reserves descender space this string
-       never uses ("© 2026 Pierce Liefeld" has no descenders), so the ink
-       sits 1px above true center. Nudge it back down. */
+       never uses ("© 2026 Pierce Liefeld" — no descenders, and no digit has
+       one, so this holds whatever the year rolls over to), so the ink sits
+       1px above true center. Nudge it back down. */
     transform: translateY(1px);
   }
 
